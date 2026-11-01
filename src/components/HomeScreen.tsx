@@ -18,6 +18,9 @@ interface HomeScreenProps {
     color: string
   ) => void;
   onOpenRules: () => void;
+  onOpenLocalMode?: () => void;
+  onOpenServerSettings?: () => void;
+  isConnected?: boolean;
   errorMessage?: string | null;
   onClearError?: () => void;
 }
@@ -26,6 +29,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   onCreateRoom,
   onJoinRoom,
   onOpenRules,
+  onOpenLocalMode,
+  onOpenServerSettings,
+  isConnected = false,
   errorMessage,
   onClearError
 }) => {
@@ -392,17 +398,56 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
         )}
       </div>
 
-      {/* Hosting explanation card */}
-      <div className="mt-8 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 text-center max-w-xl mx-auto">
-        <h3 className="font-bold text-white text-sm flex items-center justify-center gap-2 mb-1">
-          <Smartphone className="w-4 h-4 text-emerald-400" />
-          Como hospedar para jogar com amigos:
-        </h3>
-        <p className="text-xs text-slate-400 leading-relaxed">
-          Este jogo já está hospedado e pronto na nuvem! Basta abrir o link no seu celular ou computador,
-          criar a sala e passar o link ou QR Code para os seus amigos entrarem direto de onde estiverem.
-        </p>
+        {/* Offline / Local Mode Alternative */}
+        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto">
+          {onOpenLocalMode && (
+            <button
+              type="button"
+              onClick={onOpenLocalMode}
+              className="p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border border-amber-400/30 hover:border-amber-400/60 text-left transition-all cursor-pointer group shadow-lg"
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="text-xl">📱</span>
+                <span className="font-bold text-sm text-white group-hover:text-amber-400 transition-colors">
+                  Modo 1 Celular (Offline)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-snug">
+                Estão juntos no sofá ou na mesa? Jogue passando o mesmo aparelho de mão em mão sem precisar de internet!
+              </p>
+            </button>
+          )}
+
+          {onOpenServerSettings && (
+            <button
+              type="button"
+              onClick={onOpenServerSettings}
+              className="p-4 rounded-2xl bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-violet-500/40 text-left transition-all cursor-pointer group shadow-lg"
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                <span className="font-bold text-sm text-white group-hover:text-violet-300 transition-colors">
+                  Hospedagem & GitHub
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-snug">
+                Hospedou no GitHub Pages? Veja como conectar o servidor Node gratuito ou testar a conexão.
+              </p>
+            </button>
+          )}
+        </div>
+
+        {/* Hosting explanation card */}
+        <div className="mt-6 bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 text-center max-w-xl mx-auto">
+          <h3 className="font-bold text-white text-sm flex items-center justify-center gap-2 mb-1">
+            <Smartphone className="w-4 h-4 text-emerald-400" />
+            Como hospedar para jogar com amigos:
+          </h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Este jogo já está hospedado e pronto na nuvem! Basta abrir o link no seu celular ou computador,
+            criar a sala e passar o link ou QR Code para os seus amigos entrarem direto de onde estiverem.
+          </p>
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };

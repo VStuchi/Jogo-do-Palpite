@@ -8,11 +8,31 @@ const SESSION_PLAYER_KEY = 'chute_certo_player_id';
 const SESSION_NAME_KEY = 'chute_certo_player_name';
 const SESSION_AVATAR_KEY = 'chute_certo_avatar';
 const SESSION_COLOR_KEY = 'chute_certo_color';
+const CUSTOM_SERVER_KEY = 'chute_certo_custom_server';
+
+// Default cloud server when hosted on GitHub Pages or static hosts
+const DEFAULT_CLOUD_BACKEND = 'https://ais-pre-2spi26a7psauetdvq53kcn-447307753215.us-east1.run.app';
+
+export function getEffectiveBackendUrl(): string | undefined {
+  if (typeof window === 'undefined') return undefined;
+  const custom = localStorage.getItem(CUSTOM_SERVER_KEY);
+  if (custom) return custom;
+  if (import.meta.env.VITE_BACKEND_URL) return import.meta.env.VITE_BACKEND_URL;
+
+  const hostname = window.location.hostname;
+  // If hosted on GitHub Pages, Vercel static, or Netlify, there is no local Node.js WebSocket server
+  if (hostname.includes('github.io') || hostname.includes('pages.dev') || hostname.includes('surge.sh')) {
+    return DEFAULT_CLOUD_BACKEND;
+  }
+  return undefined; // Uses window.location.origin by default
+}
 
 export function useGameSocket() {
   const socketRef = useRef<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(true);
   const [gameState, setGameState] = useState<GameState | null>(null);
+  const [backendUrl, setBackendUrl] = useState<string | undefined>(getEffectiveBackendUrl);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(() => {
     return sessionStorage.getItem(SESSION_PLAYER_KEY);
   });
@@ -23,7 +43,15 @@ export function useGameSocket() {
 
   // Initialize socket connection
   useEffect(() => {
-    const socket = io({
+    const url = getEffectiveBackendUrl();
+    setIsConnecting(true);
+
+    const socket = url ? io(url, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000
+    }) : io({
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionAttempts: 10,
@@ -34,6 +62,8 @@ export function useGameSocket() {
 
     socket.on('connect', () => {
       setIsConnected(true);
+      setIsConnecting(false);
+      setErrorMessage(null);
       // Auto-reconnect if we have session info
       const savedRoom = sessionStorage.getItem(SESSION_ROOM_KEY);
       const savedPlayerId = sessionStorage.getItem(SESSION_PLAYER_KEY);
@@ -54,6 +84,12 @@ export function useGameSocket() {
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+      setIsConnecting(false);
+    });
+
+    socket.on('connect_error', (err) => {
+      setIsConnecting(false);
+      console.warn('Socket connection warning:', err.message);
     });
 
     socket.on('room_created', ({ code, playerId }: { code: string; playerId: string }) => {
@@ -218,8 +254,20 @@ export function useGameSocket() {
 
   const me = gameState?.players.find((p) => p.id === myPlayerId);
 
+  const setCustomBackendUrl = useCallback((url: string) => {
+    if (!url.trim()) {
+      localStorage.removeItem(CUSTOM_SERVER_KEY);
+    } else {
+      localStorage.setItem(CUSTOM_SERVER_KEY, url.trim());
+    }
+    window.location.reload();
+  }, []);
+
   return {
     isConnected,
+    isConnecting,
+    backendUrl,
+    setCustomBackendUrl,
     gameState,
     myPlayerId,
     roomCode,

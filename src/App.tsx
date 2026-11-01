@@ -14,10 +14,15 @@ import { RevealView } from './components/RevealView.tsx';
 import { LeaderboardView } from './components/LeaderboardView.tsx';
 import { GameOverView } from './components/GameOverView.tsx';
 import { RulesModal } from './components/RulesModal.tsx';
+import { ServerSettingsModal } from './components/ServerSettingsModal.tsx';
+import { LocalPartyGame } from './components/LocalPartyGame.tsx';
 
 export default function App() {
   const {
     isConnected,
+    isConnecting,
+    backendUrl,
+    setCustomBackendUrl,
     gameState,
     myPlayerId,
     roomCode,
@@ -38,6 +43,8 @@ export default function App() {
   } = useGameSocket();
 
   const [isRulesModalOpen, setIsRulesModalOpen] = useState(false);
+  const [isServerModalOpen, setIsServerModalOpen] = useState(false);
+  const [isLocalMode, setIsLocalMode] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-violet-500 selection:text-white">
@@ -46,13 +53,20 @@ export default function App() {
         roomCode={roomCode}
         phase={gameState?.phase}
         playerCount={gameState?.players.length}
+        isConnected={isConnected}
+        isConnecting={isConnecting}
         onLeave={roomCode ? leaveRoom : undefined}
         onOpenRules={() => setIsRulesModalOpen(true)}
+        onOpenServerSettings={() => setIsServerModalOpen(true)}
+        onToggleLocalGame={() => setIsLocalMode(!isLocalMode)}
+        isLocalMode={isLocalMode}
       />
 
       {/* Main Container */}
       <main className="flex-1 flex flex-col justify-center">
-        {!gameState || !roomCode ? (
+        {isLocalMode ? (
+          <LocalPartyGame onBack={() => setIsLocalMode(false)} />
+        ) : !gameState || !roomCode ? (
           <HomeScreen
             onCreateRoom={(hostName, avatar, color, hostPlays, settings) => {
               createRoom(hostName, avatar, color, hostPlays, settings);
@@ -61,6 +75,9 @@ export default function App() {
               joinRoom(code, name, avatar, color);
             }}
             onOpenRules={() => setIsRulesModalOpen(true)}
+            onOpenLocalMode={() => setIsLocalMode(true)}
+            onOpenServerSettings={() => setIsServerModalOpen(true)}
+            isConnected={isConnected}
             errorMessage={errorMessage}
             onClearError={clearError}
           />
@@ -130,6 +147,16 @@ export default function App() {
       <RulesModal
         isOpen={isRulesModalOpen}
         onClose={() => setIsRulesModalOpen(false)}
+      />
+
+      {/* Server Settings Modal */}
+      <ServerSettingsModal
+        isOpen={isServerModalOpen}
+        onClose={() => setIsServerModalOpen(false)}
+        isConnected={isConnected}
+        isConnecting={isConnecting}
+        currentBackendUrl={backendUrl}
+        onSaveBackendUrl={setCustomBackendUrl}
       />
 
       {/* Footer */}

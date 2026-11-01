@@ -1,21 +1,31 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, LogOut, Copy, Check, Users, Sparkles, HelpCircle } from 'lucide-react';
+import { Volume2, VolumeX, LogOut, Copy, Check, Users, Sparkles, HelpCircle, Server, Smartphone } from 'lucide-react';
 import { soundFX } from '../utils/audio.ts';
 
 interface HeaderProps {
   roomCode?: string | null;
   phase?: string;
   playerCount?: number;
+  isConnected?: boolean;
+  isConnecting?: boolean;
   onLeave?: () => void;
   onOpenRules?: () => void;
+  onOpenServerSettings?: () => void;
+  onToggleLocalGame?: () => void;
+  isLocalMode?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   roomCode,
   phase,
   playerCount = 0,
+  isConnected = false,
+  isConnecting = false,
   onLeave,
-  onOpenRules
+  onOpenRules,
+  onOpenServerSettings,
+  onToggleLocalGame,
+  isLocalMode = false
 }) => {
   const [muted, setMuted] = useState(!soundFX.enabled);
   const [copied, setCopied] = useState(false);
@@ -90,7 +100,39 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Server status pill */}
+          {onOpenServerSettings && (
+            <button
+              onClick={onOpenServerSettings}
+              title={isConnected ? 'Servidor online' : 'Configurações de servidor / GitHub Pages'}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-xs font-semibold border border-slate-700/60 transition-colors cursor-pointer"
+            >
+              <span className={`w-2 h-2 rounded-full ${
+                isConnected ? 'bg-emerald-400' : isConnecting ? 'bg-amber-400 animate-ping' : 'bg-rose-500'
+              }`} />
+              <span className="hidden md:inline text-slate-300">
+                {isConnected ? 'Online' : 'Servidor'}
+              </span>
+            </button>
+          )}
+
+          {/* Local Mode toggle */}
+          {onToggleLocalGame && !roomCode && (
+            <button
+              onClick={onToggleLocalGame}
+              title="Jogar modo 1 aparelho / offline"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isLocalMode
+                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  : 'bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-amber-400/30'
+              }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">1 Celular</span>
+            </button>
+          )}
+
           {onOpenRules && (
             <button
               onClick={onOpenRules}
