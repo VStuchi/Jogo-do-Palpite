@@ -25,7 +25,7 @@ export const VotingView: React.FC<VotingViewProps> = ({
 
   const me = gameState.players.find((p) => p.id === myPlayerId);
   const hostPlays = gameState.settings.hostPlays;
-  const isPlaying = me && (!me.isHost || hostPlays);
+  const isPlaying = !isHost || hostPlays;
 
   const handleVote = (targetPlayerId: string) => {
     soundFX.playPop();

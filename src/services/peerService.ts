@@ -487,6 +487,7 @@ export class P2PGameClient {
   private currentState: GameState | null = null;
   private onStateChange: (state: GameState) => void;
   private onError: (err: string) => void;
+  private onJoined?: (myPeerId: string) => void;
 
   constructor(
     roomCode: string,
@@ -494,14 +495,19 @@ export class P2PGameClient {
     avatar: string,
     color: string,
     onStateChange: (state: GameState) => void,
-    onError: (err: string) => void
+    onError: (err: string) => void,
+    onJoined?: (myPeerId: string) => void
   ) {
     this.onStateChange = onStateChange;
     this.onError = onError;
+    this.onJoined = onJoined;
 
     this.peer = new Peer();
 
     this.peer.on('open', (myPeerId) => {
+      if (this.onJoined) {
+        this.onJoined(myPeerId);
+      }
       const targetHostId = `${PEER_PREFIX}${roomCode.toLowerCase().trim()}`;
       const conn = this.peer!.connect(targetHostId, {
         reliable: true

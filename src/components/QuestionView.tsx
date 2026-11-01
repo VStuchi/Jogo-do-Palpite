@@ -27,7 +27,9 @@ export const QuestionView: React.FC<QuestionViewProps> = ({
 
   const me = gameState.players.find((p) => p.id === myPlayerId);
   const hostPlays = gameState.settings.hostPlays;
-  const isPlaying = me && (!me.isHost || hostPlays);
+  // Players on phone are always playing; host plays if hostPlays is enabled
+  const isPlaying = !isHost || hostPlays;
+  const alreadySubmitted = (me?.hasGuessed || hasSubmittedLocally) && !isEditing;
 
   // Reset local submission state when question changes
   useEffect(() => {
@@ -124,7 +126,7 @@ export const QuestionView: React.FC<QuestionViewProps> = ({
       {/* Player Input Section (If current user is a participating player) */}
       {isPlaying && (
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl max-w-xl mx-auto mb-8">
-          {hasSubmittedLocally && !isEditing ? (
+          {alreadySubmitted ? (
             /* Submitted confirmation state */
             <div className="text-center space-y-4 py-2">
               <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto text-3xl shadow-lg">

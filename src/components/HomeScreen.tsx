@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Play, PlusCircle, Users, Sparkles, Smartphone, Tv, ArrowRight, ShieldAlert, Award, HelpCircle } from 'lucide-react';
 import { AVATAR_OPTIONS, COLOR_OPTIONS } from '../utils/avatars.ts';
 import { soundFX } from '../utils/audio.ts';
+import { THEME_OPTIONS, filterQuestionsByTheme } from '../data/defaultQuestions.ts';
+import { QuestionItem } from '../types/game.ts';
 
 interface HomeScreenProps {
   onCreateRoom: (
@@ -9,7 +11,8 @@ interface HomeScreenProps {
     avatar: string,
     color: string,
     hostPlays: boolean,
-    settings: { totalQuestions: number; questionTimer: number; votingTimer: number }
+    settings: { totalQuestions: number; questionTimer: number; votingTimer: number },
+    customQuestions?: QuestionItem[]
   ) => void;
   onJoinRoom: (
     roomCode: string,
@@ -42,6 +45,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0].hex);
 
   // Host settings
+  const [selectedTheme, setSelectedTheme] = useState('ALL_FOOTBALL');
   const [hostPlays, setHostPlays] = useState(true);
   const [totalQuestions, setTotalQuestions] = useState(5);
   const [questionTimer, setQuestionTimer] = useState(30);
@@ -67,11 +71,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
     e.preventDefault();
     if (!nameInput.trim()) return;
     soundFX.playPop();
+    const themedQuestions = filterQuestionsByTheme(selectedTheme);
     onCreateRoom(nameInput.trim(), selectedAvatar, selectedColor, hostPlays, {
       totalQuestions,
       questionTimer,
       votingTimer: 20
-    });
+    }, themedQuestions);
   };
 
   return (
@@ -349,6 +354,39 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
                     Esta tela vira o placar público e os jogadores respondem no celular.
                   </p>
                 </button>
+              </div>
+            </div>
+
+            {/* Theme Selector */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-2 flex items-center justify-between">
+                <span>Tema das Perguntas:</span>
+                <span className="text-amber-400 text-[11px] font-semibold">
+                  {THEME_OPTIONS.find(t => t.id === selectedTheme)?.name}
+                </span>
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {THEME_OPTIONS.map((theme) => {
+                  const isSelected = selectedTheme === theme.id;
+                  return (
+                    <button
+                      key={theme.id}
+                      type="button"
+                      onClick={() => { setSelectedTheme(theme.id); soundFX.playPop(); }}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-amber-400/20 border-amber-400 text-white shadow-lg shadow-amber-400/10 ring-2 ring-amber-400/30'
+                          : 'bg-slate-800/80 border-slate-700/80 hover:border-slate-600 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-xl">{theme.icon}</span>
+                        <span className="font-bold text-xs truncate">{theme.name}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-400 line-clamp-1">{theme.desc}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

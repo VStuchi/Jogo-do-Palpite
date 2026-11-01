@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Users, Play, Send, CheckCircle2, Target, Award, AlertTriangle, Search, ChevronRight, Trophy, RotateCcw } from 'lucide-react';
-import { DEFAULT_QUESTIONS, Question } from '../data/defaultQuestions.ts';
+import { DEFAULT_QUESTIONS, Question, THEME_OPTIONS, filterQuestionsByTheme } from '../data/defaultQuestions.ts';
 import { AVATAR_OPTIONS, COLOR_OPTIONS } from '../utils/avatars.ts';
 import { soundFX } from '../utils/audio.ts';
 import confetti from 'canvas-confetti';
@@ -23,6 +23,7 @@ export const LocalPartyGame: React.FC<{ onBack: () => void }> = ({ onBack }) => 
     { id: '2', name: 'Jogador 2', avatar: '🍕', color: '#3b82f6', score: 0, currentGuess: null, currentVote: null, roundPoints: 0 }
   ]);
   const [newName, setNewName] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('ALL');
   const [currentQIndex, setCurrentQIndex] = useState(0);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [activePlayerTurn, setActivePlayerTurn] = useState(0);
@@ -37,7 +38,8 @@ export const LocalPartyGame: React.FC<{ onBack: () => void }> = ({ onBack }) => 
 
   const startLocalGame = () => {
     if (players.length < 2) return;
-    const shuffled = [...DEFAULT_QUESTIONS].sort(() => 0.5 - Math.random()).slice(0, 5);
+    const pool = filterQuestionsByTheme(selectedTheme);
+    const shuffled = [...pool].sort(() => 0.5 - Math.random()).slice(0, 5);
     setQuestions(shuffled);
     setCurrentQIndex(0);
     setActivePlayerTurn(0);
@@ -246,9 +248,39 @@ export const LocalPartyGame: React.FC<{ onBack: () => void }> = ({ onBack }) => 
             </form>
           )}
 
+          {/* Theme selector */}
+          <div className="mb-6 space-y-2">
+            <span className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Tema das Perguntas:
+            </span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+              {THEME_OPTIONS.map((theme) => {
+                const isSelected = selectedTheme === theme.id;
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedTheme(theme.id);
+                      soundFX.playPop();
+                    }}
+                    className={`p-2 rounded-xl text-left border transition-all text-xs cursor-pointer ${
+                      isSelected
+                        ? 'bg-violet-600/30 border-violet-400 text-white font-bold ring-1 ring-violet-400/50'
+                        : 'bg-slate-800/80 border-slate-700/80 text-slate-300 hover:border-slate-600'
+                    }`}
+                  >
+                    <span className="block text-sm">{theme.icon}</span>
+                    <span className="block truncate mt-0.5">{theme.name}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           <button
             onClick={startLocalGame}
-            className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 text-white font-display font-black text-base shadow-xl cursor-pointer"
+            className="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-fuchsia-600 to-amber-500 text-white font-display font-black text-base shadow-xl cursor-pointer hover:brightness-110 transition-transform active:scale-[0.98]"
           >
             Iniciar Jogo com {players.length} Amigos! 🚀
           </button>

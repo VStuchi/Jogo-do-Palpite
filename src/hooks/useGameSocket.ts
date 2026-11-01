@@ -230,14 +230,15 @@ export function useGameSocket() {
         (err) => {
           setErrorMessage(err);
           soundFX.playBuzzer();
+        },
+        (myId) => {
+          setMyPlayerId(myId);
+          sessionStorage.setItem(SESSION_PLAYER_KEY, myId);
         }
       );
 
-      const clientId = `client_${Date.now()}`;
       setRoomCode(cleanCode);
-      setMyPlayerId(clientId);
       sessionStorage.setItem(SESSION_ROOM_KEY, cleanCode);
-      sessionStorage.setItem(SESSION_PLAYER_KEY, clientId);
       soundFX.playPop();
       return;
     }

@@ -4,6 +4,7 @@ import { Users, Play, Bot, Copy, Check, Sparkles, Smartphone, Settings, UserMinu
 import { GameState, PublicPlayer, QuestionItem } from '../types/game.ts';
 import { soundFX } from '../utils/audio.ts';
 import { getRoomShareUrl } from '../utils/url.ts';
+import { THEME_OPTIONS, filterQuestionsByTheme } from '../data/defaultQuestions.ts';
 import { AiQuestionModal } from './AiQuestionModal.tsx';
 
 interface LobbyViewProps {
@@ -25,6 +26,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
 }) => {
   const [copied, setCopied] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState('ALL_FOOTBALL');
   const [customQuestions, setCustomQuestions] = useState<QuestionItem[] | undefined>();
 
   const shareUrl = getRoomShareUrl(gameState.code);
@@ -37,9 +39,17 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
     });
   };
 
+  const handleSelectTheme = (themeId: string) => {
+    setSelectedTheme(themeId);
+    const questions = filterQuestionsByTheme(themeId);
+    setCustomQuestions(questions);
+    soundFX.playPop();
+  };
+
   const handleStart = () => {
     soundFX.playSuccess();
-    onStartGame(customQuestions);
+    const finalQuestions = customQuestions || filterQuestionsByTheme(selectedTheme);
+    onStartGame(finalQuestions);
   };
 
   const players = gameState.players;
@@ -210,6 +220,45 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
           );
         })}
       </div>
+
+      {/* Theme Selection for Host */}
+      {isHost && (
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 mb-8 max-w-2xl mx-auto shadow-xl">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-bold text-sm text-white flex items-center gap-2">
+              <span>⚽ Tema da Partida:</span>
+              <span className="text-amber-400 font-semibold">
+                {THEME_OPTIONS.find(t => t.id === selectedTheme)?.name}
+              </span>
+            </h3>
+            <span className="text-[11px] text-slate-400">Clique para mudar o tema</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {THEME_OPTIONS.map((theme) => {
+              const isSelected = selectedTheme === theme.id;
+              return (
+                <button
+                  key={theme.id}
+                  type="button"
+                  onClick={() => handleSelectTheme(theme.id)}
+                  className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-amber-400/20 border-amber-400 text-white shadow-lg ring-2 ring-amber-400/30'
+                      : 'bg-slate-800/80 border-slate-700/80 hover:border-slate-600 text-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-xl">{theme.icon}</span>
+                    <span className="font-bold text-xs truncate">{theme.name}</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 line-clamp-1">{theme.desc}</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Start Game Action / Waiting Card */}
       <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 text-center max-w-xl mx-auto shadow-xl">
