@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Volume2, VolumeX, LogOut, Copy, Check, Users, Sparkles, HelpCircle, Server, Smartphone } from 'lucide-react';
 import { soundFX } from '../utils/audio.ts';
+import { getRoomShareUrl } from '../utils/url.ts';
 
 interface HeaderProps {
   roomCode?: string | null;
@@ -40,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const copyRoomLink = () => {
     if (!roomCode) return;
-    const url = `${window.location.origin}/?room=${roomCode}`;
+    const url = getRoomShareUrl(roomCode);
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       soundFX.playPop();

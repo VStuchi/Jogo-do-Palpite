@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Users, Play, Bot, Copy, Check, Sparkles, Smartphone, Settings, UserMinus, Shield } from 'lucide-react';
 import { GameState, PublicPlayer, QuestionItem } from '../types/game.ts';
 import { soundFX } from '../utils/audio.ts';
+import { getRoomShareUrl } from '../utils/url.ts';
 import { AiQuestionModal } from './AiQuestionModal.tsx';
 
 interface LobbyViewProps {
@@ -26,9 +27,7 @@ export const LobbyView: React.FC<LobbyViewProps> = ({
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [customQuestions, setCustomQuestions] = useState<QuestionItem[] | undefined>();
 
-  const shareUrl = typeof window !== 'undefined'
-    ? `${window.location.origin}/?room=${gameState.code}`
-    : '';
+  const shareUrl = getRoomShareUrl(gameState.code);
 
   const copyLink = () => {
     navigator.clipboard.writeText(shareUrl).then(() => {
