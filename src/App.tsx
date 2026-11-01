@@ -21,6 +21,8 @@ export default function App() {
   const {
     isConnected,
     isConnecting,
+    isP2P,
+    toggleP2P,
     backendUrl,
     setCustomBackendUrl,
     gameState,
@@ -155,6 +157,8 @@ export default function App() {
         onClose={() => setIsServerModalOpen(false)}
         isConnected={isConnected}
         isConnecting={isConnecting}
+        isP2P={isP2P}
+        onToggleP2P={toggleP2P}
         currentBackendUrl={backendUrl}
         onSaveBackendUrl={setCustomBackendUrl}
       />

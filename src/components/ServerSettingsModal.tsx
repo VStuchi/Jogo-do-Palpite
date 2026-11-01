@@ -6,6 +6,8 @@ interface ServerSettingsModalProps {
   onClose: () => void;
   isConnected: boolean;
   isConnecting: boolean;
+  isP2P?: boolean;
+  onToggleP2P?: () => void;
   currentBackendUrl?: string;
   onSaveBackendUrl: (url: string) => void;
 }
@@ -15,6 +17,8 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
   onClose,
   isConnected,
   isConnecting,
+  isP2P = false,
+  onToggleP2P,
   currentBackendUrl,
   onSaveBackendUrl
 }) => {
@@ -31,6 +35,8 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
     onSaveBackendUrl('');
   };
 
+  const cloudUrl = 'https://ais-pre-2spi26a7psauetdvq53kcn-447307753215.us-east1.run.app';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="bg-slate-900 border border-slate-700 rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl p-6 relative">
@@ -46,20 +52,70 @@ export const ServerSettingsModal: React.FC<ServerSettingsModalProps> = ({
             <Server className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="font-display font-bold text-xl text-white">Servidor & Hospedagem</h2>
-            <p className="text-slate-400 text-xs">Conexão multiplayer para jogar nos celulares</p>
+            <h2 className="font-display font-bold text-xl text-white">Como Jogar nos Celulares</h2>
+            <p className="text-slate-400 text-xs">Opções de conexão e hospedagem</p>
           </div>
         </div>
 
+        {/* Cloud Run Link Ready Card */}
+        <div className="p-4 rounded-2xl bg-gradient-to-br from-violet-950/60 to-slate-900 border border-violet-500/40 mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-base">🚀</span>
+            <h3 className="font-bold text-white text-sm">O jogo já está hospedado e pronto!</h3>
+          </div>
+          <p className="text-xs text-slate-300 leading-relaxed mb-3">
+            Você não precisa se preocupar em hospedar nada! O jogo já possui um link ativo com servidor Node.js e WebSockets 24/7 na nuvem:
+          </p>
+          <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2">
+            <span className="font-mono text-xs text-amber-400 truncate">
+              {cloudUrl}
+            </span>
+            <a
+              href={cloudUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs font-bold shrink-0 flex items-center gap-1"
+            >
+              Abrir <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </div>
+
+        {/* P2P Mode (Notebook is the Server via WebRTC) */}
+        {onToggleP2P && (
+          <div className="p-4 rounded-2xl bg-slate-800/80 border border-slate-700 mb-5">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">📡</span>
+                <span className="font-bold text-sm text-white">Modo Direto P2P (WebRTC)</span>
+              </div>
+              <button
+                type="button"
+                onClick={onToggleP2P}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  isP2P
+                    ? 'bg-emerald-500 text-white shadow-md'
+                    : 'bg-slate-700 text-slate-400 hover:text-white'
+                }`}
+              >
+                {isP2P ? 'ATIVADO' : 'DESATIVADO'}
+              </button>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              <strong>Como você perguntou:</strong> Neste modo, o seu próprio notebook é o servidor! Os celulares enviam os palpites direto para a aba do notebook via WebRTC (DataChannel). Não precisa de backend externo nenhum!
+            </p>
+          </div>
+        )}
+
         {/* Connection Status Badge */}
-        <div className="mb-6 p-4 rounded-2xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+        <div className="mb-5 p-3.5 rounded-2xl bg-slate-800/60 border border-slate-700 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className={`w-3 h-3 rounded-full ${
               isConnected ? 'bg-emerald-400 animate-pulse' : isConnecting ? 'bg-amber-400 animate-ping' : 'bg-rose-500'
             }`} />
             <div>
               <span className="text-xs font-bold text-white block">
-                {isConnected ? 'Servidor Conectado! ✅' : isConnecting ? 'Conectando ao servidor...' : 'Servidor Desconectado'}
+                {isP2P ? 'Modo P2P Ativo (Sem Backend)' : isConnected ? 'Servidor Conectado! ✅' : isConnecting ? 'Conectando...' : 'Servidor Desconectado'}
               </span>
               <span className="text-[11px] text-slate-400 font-mono block truncate max-w-xs">
                 {currentBackendUrl || window.location.origin}
