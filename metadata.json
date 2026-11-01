@@ -1,0 +1,6 @@
+{
+  "name": "Chute Certo: O Jogo do Pior Palpite",
+  "description": "Jogo multiplayer em tempo real estilo Kahoot para jogar entre amigos no celular. Responda números, ganhe pontos por aproximação e vote em quem deu o pior chute!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
